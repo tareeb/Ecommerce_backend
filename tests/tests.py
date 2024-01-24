@@ -18,6 +18,7 @@ class HelloWorldViewTest(TestCase):
         
 class RegisterViewTest(TestCase):
     def setUp(self):
+        print("\nSetting up the test : RegisterUser")
         self.client = APIClient()
         self.register_url = reverse('register-view')
 
@@ -33,6 +34,7 @@ class RegisterViewTest(TestCase):
         }
 
     def test_register_user(self):
+        print("Testing : RegisterUser")
         response = self.client.post(self.register_url, self.user_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -43,10 +45,12 @@ class RegisterViewTest(TestCase):
         # Check if the user's data matches the submitted data
         serializer = UserSerializer(user)
         self.assertEqual(serializer.data['name'], self.user_data['name'])
+        print("Test RegisterUser : Done")
 
     
 class UserViewTest(TestCase):
     def setUp(self):
+        print("\nSetting up tests : UserLogin and JWT Token Generation ")
         self.client = Client()
         self.user = User.objects.create(
             name="Test User",
@@ -56,43 +60,39 @@ class UserViewTest(TestCase):
         )
 
     def test_user_view_authenticated(self):
-        print("Testing user view authenticated")
         # Log in
+        print("Testing UserLogin")
         login_url = reverse('login-view')
         login_data = {
             'email': self.user.email,
             'password': self.user.password,
         }
 
-        print("user-data:", self.user.email, ":", self.user.password)
-        print("login:", login_data)
-
         response = self.client.post(login_url, login_data, format='json')
-        print("response:", response.status_code)
-        print("response.data:", response.data)
-
+       
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         jwt_token = response.data['jwt']
         
-        # Set the JWT token in the client's cookies
         self.client.cookies['jwt'] = jwt_token
 
+        print("User Authentication Successfull")
+        print("Testing User-View : Getting data based on JWT Token from cookie")
+        
         # Make a GET request to the user view
         user_view_url = reverse('user-view')
         response = self.client.get(user_view_url)
-
-        # Check if the response status code is 200 (OK)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-        # Check if the serialized user data matches the user's data
         serializer = UserSerializer(self.user)
         self.assertEqual(response.data, serializer.data)
+        
+        print("Test User-View : Done")
 
     def test_user_view_unauthenticated(self):
         # Make a GET request to the user view without authenticating
         user_view_url = reverse('user-view')
         response = self.client.get(user_view_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        
+        print("Test Unauthenticated User-View : Done")
 
-    # Add more test cases as needed for edge cases and err
             

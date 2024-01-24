@@ -6,9 +6,10 @@ from django.contrib.auth.models import AbstractUser
 class Role(models.Model):
     role_id = models.AutoField(primary_key=True)
     role_name = models.CharField(max_length=255, unique=True)
-    
     def __str__(self):
         return self.role_name
+    
+    #For Ecommere store roles can be : Buyer , seller , Admin
     
 class User(AbstractUser):
     user_id = models.AutoField(primary_key=True)

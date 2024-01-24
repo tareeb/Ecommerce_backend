@@ -13,14 +13,6 @@ class UserSerializer(serializers.ModelSerializer):
             'password' : {'write_only' : True}
         }
 
-    def create(self, validated_data):
-        password = validated_data.pop('password' , None)
-        obj = self.Meta.model(**validated_data)
-        if password is not None:
-            obj.set_password(password)
-        obj.save()
-        return obj
-
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role

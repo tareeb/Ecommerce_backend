@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from .serializers import UserSerializer
 from rest_framework.response import Response
 from .models import User
+from rest_framework import status
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import login 
 
@@ -23,14 +24,13 @@ class Login(APIView):
     def post(self , request):
         password = request.data['password']
         email = request.data['email']
-        
-        print("Login Request : " , password , email)
-
+                
         user = User.objects.filter(email = email).first()
+        
         if user is None:
-            raise AuthenticationFailed("user not found")
-        if not user.check_password(password):
-            raise AuthenticationFailed("incorrect password")
+            raise AuthenticationFailed()
+        if password != user.password:
+            raise AuthenticationFailed()
         
         login(request, user)
 
@@ -46,6 +46,7 @@ class Login(APIView):
         response.data = {
             'jwt' :token1
         }
+        response.status_code = status.HTTP_200_OK 
         return response
 
 class UserView(APIView):
@@ -58,7 +59,6 @@ class UserView(APIView):
         except jwt.ExpiredSignatureError:
             raise AuthenticationFailed('unauthenticated')
 
-        print(payload['id'])
         user = User.objects.filter(user_id = payload['id']).first()
         
         if not user:
